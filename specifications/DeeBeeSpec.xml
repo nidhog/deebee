@@ -1,0 +1,1051 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This template is for creating an Internet Draft using xml2rfc,
+     which is available here: http://xml.resource.org. -->
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+<!-- One method to get references from the online citation libraries.
+     There has to be one entity for each item to be referenced. 
+     An alternate method (rfc include) is described in the references. -->
+
+<!ENTITY RFC2629 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2629.xml">
+]>
+<?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
+<!-- used by XSLT processors -->
+<!-- For a complete list and description of processing instructions (PIs), 
+     please see http://xml.resource.org/authoring/README.html. -->
+<!-- Below are generally applicable Processing Instructions (PIs) that most I-Ds might want to use.
+     (Here they are set differently than their defaults in xml2rfc v1.32) -->
+<?rfc strict="yes" ?>
+<!-- give errors regarding ID-nits and DTD validation -->
+<!-- control the table of contents (ToC) -->
+<?rfc toc="yes"?>
+<!-- generate a ToC -->
+<?rfc tocdepth="4"?>
+<!-- the number of levels of subsections in ToC. default: 3 -->
+<!-- control references -->
+<?rfc symrefs="yes"?>
+<!-- use symbolic references tags, i.e, [RFC2119] instead of [1] -->
+<?rfc sortrefs="yes" ?>
+<!-- sort the reference entries alphabetically -->
+<!-- control vertical white space 
+     (using these PIs as follows is recommended by the RFC Editor) -->
+<?rfc compact="yes" ?>
+<!-- do not start each main section on a new page -->
+<?rfc subcompact="no" ?>
+<!-- do not display copyright and other IETF-related stuff -->
+<?rfc private="(c) GROUP 14, 2014" ?>
+
+<rfc category="info" docName="draft-ietf-xml2rfc-template-05" ipr="trust200902">
+  <!-- category values: std, bcp, info, exp, and historic
+     ipr values: full3667, noModification3667, noDerivatives3667
+     you can add the attributes updates="NNNN" and obsoletes="NNNN" 
+     they will automatically be output with "(if approved)" -->
+
+  <!-- ***** FRONT MATTER ***** -->
+
+  <front>
+    <!-- The abbreviated title is used in the page header - it is only necessary if the 
+         full title is longer than 39 characters -->
+
+    <title abbrev="c2w Protocol Specification V 2.0">DeeBee database specifications - text protocol
+    </title>
+
+    <!-- add 'role="editor"' below for the editors if appropriate -->
+
+    
+    <author fullname="ELOUAFIQ Ismail" initials=""
+            surname="I.ELOUAFIQ">
+      <organization>Telecom Bretagne</organization>
+
+      <address>
+        <postal>
+          <street></street>
+
+          <!-- Reorder these if your country does things differently -->
+
+          <city>Brest</city>
+
+          <region></region>
+
+          <code></code>
+
+          <country>France</country>
+        </postal>
+
+        
+
+        
+
+        <!-- uri and facsimile elements may also be added -->
+      </address>
+    </author>
+
+    <date month="March" year="2014" />
+
+    <!-- If the month and year are both specified and are the current ones, xml2rfc will fill 
+         in the current day for you. If only the current year is specified, xml2rfc will fill 
+	 in the current day and month for you. If the year is not the current one, it is 
+	 necessary to specify at least a month (xml2rfc assumes day="1" if not specified for the 
+	 purpose of calculating the expiry date).  With drafts it is normally sufficient to 
+	 specify just the year. -->
+
+    <keyword>c2w</keyword>
+
+    <!-- Keywords will be incorporated into HTML output
+         files in a meta tag but they have no effect on text or nroff
+         output. If you submit your draft to the RFC Editor, the
+         keywords will be used for the search engine. -->
+
+    <abstract>
+      <t>This document provides a sample protocol specification for the DeeBee database. The DeeBee database protocol is based on the client-server model. The goal of this protocol is to realise the application "c2w" which allows users to chat while watching a movie. Note that this is just a proposition for the c2w protocol specification.</t>
+    </abstract>
+  </front>
+
+  <middle>
+    <section title="Introduction">
+<t>The c2w protocol is an application layer protocol that is intended for the c2w application. The goal of this application is to enable clients to watch videos present in the server and to chat in the same time.</t>
+<t>In the c2w application, a client starts by logging in with his username and the port number of the server to address a request of connection to the server. If this request is successful, the client gets in the main-room where he can either chat with other clients or choose to join a movie room so he can Chat While Watching. In the main room, the client sees a list of all the users with their availability and a ist of all the movies available. In a movie room, a client has access to a list of all the users in the same room. Wherever he is, the client can select another client to start a private chat with. And of course, the client can disconnect by leaving the main room. 
+    Clients can use either UDP or TCP to exchange messages with the server.  </t>
+
+      <t>This document defines the protocol used by the clients to talk with the server and vice-versa. It includes the requirements needed to implement the c2w protocol. The c2w protocol enables working with an unreliable transportation protocol such as UDP.</t>
+<t>In our protocol, we have a unique format for all the packets, but since these packets are of different types, there are differences in the data field.</t>
+<t>While no security considerations were taken into account, the provided specifications allow improving the c2w protocol for security.</t>
+
+    </section>
+
+	<section title="Terminology and Abbreviations">
+<t>This document uses the following terms:</t>
+<t>* The capitalized words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+   document are to be interpreted as described in BCP 14, RFC 2119 [1].</t>
+<t>* Id : (or ID) identifier.</t>
+<t>* The Id of a movie room and the Id of the corresponding movie have the same meaning.</t>
+<t>* UDP : User Datagram Protocol. [2] </t>
+<t>* TCP : Transmission Control Protocol. [3]</t>
+<t>* AYT : Are You There (see Section 4. Packet Format). </t>
+<t>* c2w : Chat While Watching. </t>
+<t>* IP : Internet Protocol. [4]</t>
+<t>* SRC: Source. Can be either a client or a server. </t>
+<t>* ACK: (or Ack) Acknowledgement. </t>
+<t>* Message: a text that a certain client needs to send to other client.</t>
+	</section>
+
+    <section title="General Specifications">
+
+	<t>When a client wants to connect to the server it MUST send a Login Request. The login request does not contain the User Id of the client, since this Id is unknown before establishing connection with the server, but it does contain the username. </t>
+<t>The username of the client should be different from other usernames. The server SHOULD make sure that no two clients have the same username (eventhough the User Id can differentiate between different users).</t>
+<t>The number of clients MUST be lower than 255. The number of movies MUST be lower than 255.</t> 
+<t>The number of characters of the user name MUST be lower than 30 characters</t>
+<t>The number of characters of the movie name MUST be lower than 100 characters</t>
+<t>The length of a message sent by the client MUST be lower than 140 bytes.</t>
+<t>Clients MUST communicate with each other through and only through the server.</t>
+<t>Whenever the server sends a packet to a certain client the User Identifier MUST be set as the Id of that client.</t>	
+<t>The acknowledgement (if appropriate) has the same sequence number of the request, and the client MUST wait for the acknowledgement of each request. Note that even the Type Field of the Ack is the same as the Type Field of the request. The sender of a certain request that needs to be acknowledged might not receive an Ack either because the packet was lost or the request was lost. If this is the case and the sender does not receive the acknowledgement in a certain delay of time, the client will re-send the same message with the same sequence number. Moreover, if a packet was sent 3 times and hasn't been acknowledged the client MUST stop sending it to avoid saturating the server.</t>
+	<t>A client is considered as "connected" if the server receives a Login Request (see next section: Packet format) from that client and sends a acknowledgement back. The server should then proceed by sending the User list and the Movie list to the client.
+The sequence numbers are synchronized at the beginning. The server has a sequence number for each client.</t>
+	<t>When a client 'A' needs to send a message to a client 'B', 'A' sends the message to the server (with the Id of 'B' in the destination Id and the Id of 'A' as the User Identifier). The server then forwards the message to 'B' (for the packet sent by the server, the destination's Id will be the Id of 'A' while the User Identifier will be the Id of 'B'). </t>
+
+	</section>
+    <section title="Packet format">
+    <t>
+    The following figure (Figure 1) shows the format of a c2w packet. Every packet sent by both the server and the client MUST follow this format.
+    </t>
+
+    <t>
+    <figure align="center" anchor="sample_pkt">
+    <artwork>
+    0                   1                   2                   3   
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |F|A|       |   |               |               |               |
+    |R|C| Type  | RT|Sequence Number|User Identifier|Destination Id |
+    |G|K|       |   |               |               |               |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    | Data Length   |                                               |  
+    +-+-+-+-+-+-+-+-+                                               |
+    |                                                               |
+    .                                                               .
+    .                            Data                               .
+    .                                                               .
+    |                                                               |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        </artwork></figure>
+* FRG flag (1 bit): Indicates if the message is the fragmented
+	<list >
+      <t>- 0 if the message is not fragmented OR if it's the last message of a series of messages fragmented.</t>
+	  <t>- 1 if the message is fragmented, so the client MUST wait for further messages.</t>
+    </list>
+	* ACK flag (1 bit): Indicates if the packet is an acknowledgement of a received packet
+	<list >
+      <t>- 1 if the packet is an acknowledgement.</t>
+	  <t>- 0 otherwise.</t>
+    </list>
+	* Type field (4 bits): Indicates the type of the packet
+	</t>
+	<texttable anchor="packet_type" title="Binary representation for each type message">
+          <preamble>The following table shows the binary representation of the Type field.</preamble>
+
+          <ttcol align="center">Binary Representation</ttcol>
+
+          <ttcol align="center">Corresponding Type</ttcol>
+
+			<c>0000</c>
+        	<c>Login Request</c>
+			<c>1111</c>
+			<c>Disconnection Request</c>
+			<c>0001</c>
+			<c>Message</c>
+			<c>0010</c>
+			<c>Movie List Request</c>
+			<c>0100</c>
+			<c>User List Request</c>
+			<c>1000</c>
+			<c>Room Request</c>
+			<c>0111</c>
+			<c>Leave Private Chat Request</c>
+            <c>0011</c>
+        	<c>Movie List</c>
+			<c>0101</c>
+			<c>User List</c>
+			<c>1100</c>
+			<c>Message Forward</c>
+			<c>1010</c>
+			<c>Private Chat Request</c>
+			<c>1001</c>
+			<c>Leave Private Chat Request Forward</c>
+			<c>0110</c>
+			<c>AYT</c>
+			<c>1110</c>
+			<c>Message Error</c>
+          <postamble></postamble>
+        </texttable>
+		<t><list>
+			<t>- Login Request: Indicates that the corresponding packet is for a login request. </t>
+			<t>- Disconnection Request: tells the server that the client sending this request wants to disconnect.</t>
+			<t>Note that leaving the Main Room is considered as a Disconnection Request.</t>
+			<t>- Message : This type should be set whenever the corresponding packet is a message whether it is a private message, a message meant to be sent to a movie room or a message for the main room.</t>
+			<t>- Movie List Request: Indicates that the client is requesting the movie list.</t>
+			<t>- User List Request: Indicates that the client is requesting the user list.</t>
+			<t>- Room Request: Set when a client needs to have access to a room (The RT field will then specify which type the room is and the Destination Id will precise the Id of the room).</t>
+			<t>Note that the request for opening a private chat is considered as a Room Request (having an RT field equal to 10, and a Destination Id equal to the Id of the user to whom the message has to be forwarded).
+			Leaving a Movie Room is considered as sending a request to the Main Room</t>
+			<t>- Leave Private Chat Request: Indicates that a client wants to leave a private chat with another client.</t>
+            <t>- Movie List: Indicates that the corresponding packet is a movie list.</t>
+			<t>- User List: Indicates that the corresponding packet is a user list.</t>
+			<t>- Message Forward: Forwards a message sent from a client to another client. If the server receives a message (type Message) destined for a single client (i.e: the Room Type field contains a private chat type and the Destination Id field contains the User Identifier of the destination client), it sends a packet of this type for the destination client. If the server receives a message destined for a room, it will send a single message for each client present in that room.</t>
+			<t>- Private Chat Request: When the server wants to ask a client to open a Private Chat with another client (who requested that Private Chat with the server).</t>
+			<t>- Leave Private Chat Request Forward: When the server wants to tell a client that another client (with whom he was in a Private Chat) has left the Private Chat. </t>
+			<t>- AYT (Are You There): With this request the server can verify if a client is still connected. In case this client does not respond back with an AYT Ack, the server will consider that the corresponding client has been disconnected.</t>
+            <t>- Error Message: When the client has some information not right, the server will send it to the client.</t>
+            <t>Note that the message error is a special type of the acknowledgement, which means the flag ACK equal 1 and it has the same sequence number of the request which it wants to response.</t>
+</list></t>
+<t>If the acknowledgement is the type of Error Message, the first byte of the data field MUST be the type of errors.</t>
+
+<texttable anchor="packet_type_errors" title="Binary representation for each type errors">
+          <preamble>The following table shows the binary representation of the type errors. </preamble>
+
+          <ttcol align="center">Binary Representation</ttcol>
+
+          <ttcol align="center">Corresponding Type</ttcol>
+
+			<c>00000001</c>
+        	<c>Username already exists</c>
+			<c>00000010</c>
+			<c>Id does not exist</c>
+			<c>00000011</c>
+			<c>Limit of persons in the application</c>
+			<c>00000100</c>
+			<c>The number of caracters are too long (user name, movie name or message)</c>
+			<c>00000101</c>
+			<c>Rejected Request (private chat)</c>
+			<c>11111111</c>
+			<c>Improperly formated</c>
+          <postamble></postamble>
+        </texttable>
+<t>The type "improperly formated" corresponds to all the other hypothetical errors.</t>
+			
+
+    <t>* The acknowledgement for a message just changes the flag of ACK to 1 by the server. We keep the rest of the message.
+    </t>
+	<t>
+	* RT (Room Type) field (2 bit): Indicates the type of the corresponding room,
+	<list >
+	  <t>- 00: Main Room.</t>
+	  <t>- 01: Movie Room.</t>
+	  <t>- 10: Private Chat.</t>
+      <t>- 11: Insignificant.</t>
+    </list>
+	</t>
+	<t>
+	
+	* Sequence number field (8 bits): Contains the sequence number of the packet being sent,
+	<list>
+		<t>- When a connection is established this field is set to 0.</t>
+		<t>- This number is increased by 1 if the ACK for the last request is received.</t>
+		<t>- When the maximum number is reached (255) the sequence number is reset back to 0.</t>
+		<t>- Each client holds his own sequence number with which it interacts with the server.</t>
+		<t>- The server holds a different sequence number for each client it interacts with.</t>
+	</list>
+	</t>
+	<t>
+	* User Identifier field (8 bit): Contains the user identifier of the client. After the communication has been established between a client and the server (i.e: the client sent a Login Request and the server responded with a acknowledgement containing the User Id of that client), when the client and the server communicate with each other the User Id is always equal to the Id of the client.
+	<list>
+		<t>- This number is defined by the server at the connection of the client.</t>
+		<t>- Each client has a different unique user identifier.</t>
+	</list>
+	</t>
+	<t>
+	* Destination Id field (8 bit): The Identifier corresponding to the destination. In case the packet is a:
+	<list >
+      <t>- Message broadcasted to a room: This field will contain the corresponding destination room's ID.
+			Note that each Movie Room has a single ID, if this message is sent to the Main Room, this field becomes insignificant since the server knows that the message is for the Main Room from the RT (Room Type) field.</t>
+	  <t>- Private message: This field will contain the corresponding destination user's ID.</t>
+	  <t>- Otherwise, this field is insignificant.</t>
+    </list>
+	</t>
+	<t>
+	* Data Length field (8 bit): Specifies the length of the Data field in bytes.
+	</t>
+	<t>
+	* Data field (Variable Length): The data corresponding to each packet. In case the message is a:</t>
+	
+      <t>- Movie list: the data is represented as follows (Figure 2).</t>
+		<figure align="center" anchor="movie_list_data_pkt">
+		<artwork>
+    0                   1                   2                   3   
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    | Data Length   | Name Length 1 |    Room Id 1  |               |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+               |
+    |                            Name   1                           .
+    +                                     +-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |                                     |      Padding            |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    | Name Length 2 |    Room Id 2  |                               |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               +
+    .                            Name 2                             .
+    .                                     +-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |                                     |      Padding            |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    | Name Length 3 |    Room Id 3  |                               |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               +
+    .                            Name 3                             .
+    .                                     +-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |                                     |      Padding            |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |                                                               |
+    .                                                               .
+    .                                                               .
+    |                                                               |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        </artwork></figure>
+
+	  <t>- Users list: the data is represented as follows (Figure 3).</t>
+		<figure align="center" anchor="user_list_data_pkt">
+		<artwork>
+    0                   1                   2                   3   
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 0
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    | Data Length   | Name Length 1 |    User Id 1  |S|             |
+    |               |               |               |1|             |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+             |
+    .                            Name   1                           .
+    .                                     +-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |                                     |      Padding            |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    | Name Length 2 |    User Id 2  |S|                             |
+    |               |               |2|                             |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                             |
+    .                            Name 2                             .
+    .                                     +-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |                                     |      Padding            |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    | Name Length 3 |    User Id 3  |S|                             |
+    |               |               |3|                             |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                             |
+    .                            Name 3                             .
+    .                                     +-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |                                     |      Padding            |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |                                                               |
+    .                                                               .
+    .                                                               .
+    |                                                               |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        </artwork></figure>
+			<t>Where S 'i' : indicates the status of the user number 'i'. If this bit is equal to 1, it means that the user is Available (in the main room). If it is equal to zero, it means that the user is in a movie room.</t>
+	<t>- Login Request: The data field will contain the username of the client.</t>
+	<t>- Message or Message Forward: The data field will contain the message itself.</t>
+	<t>- Padding: It just serves to complete the 32 bit frame if it is incomplete. This field is filled with zeros.</t>
+	<t>- Room Request Ack, in case the RT Field is equal to 01 (movie room): The server must send the Port Number and the IP Address. In this case the the first byte of the Data Field contains the port number and the next 4 bytes will contain the IP Address. The IP Address must be in the following order: For instance, if the IP Address is 192.0.1.0 the byte following the port number contains 192, the next one will contain 0, then 1, then 0.</t>
+
+    </section>
+	<section title="Sequence Number Selection">
+
+		<t>
+			Since the c2w protocol is supposed to work on both TCP and UDP, loss and out of order delivery of packets should be taken into account. Hence, to each transmitted packet, a Sequence Number MUST be assigned. The Sequence Number is a number between 0 and 255.
+		</t>
+		<t>
+			For the Login Request, the Sequence Number is 0. For each client communicating with the server, there are two Sequence Numbers: one held by the client: CSSN (Client Side Sequence Number), the second held by the server: SSSN (Server Side Sequence Number). Note that, the SSSN and CSSN for two different clients are different and that the server holds a different SSSN for each different client. At the beginning, both the SSSN and CSSN are set to 0. Whenever the server sends a packet which is not an acknowledgement, the SSSN related to the corresponding client is incremented by one. If it is the client who sends a packet which is not an acknowledgement the CSSN is incremented by one. (Note that the SSSN and CSSN are equal at the beginning of the connection but can differ afterwards)
+		</t>
+		<t>
+			Since every single packet is sequenced, each of them can be acknowledged. For each acknowledgement the Sequence Number is set as the acknowledged packet's sequence number.
+		</t>
+		<t>
+			After each acknowledgement received, the Sequence Number is incremented by one. Once it reaches 255 it should be set back to 0.
+		</t>
+<t>
+			Thus, when the server receives a packet from a client the acknowledgement it sends (if appropriate) SHOULD have the same Sequence Number. The same thing goes for the clients.
+		</t>
+	</section>
+	<section title="User List Update">
+	<t>
+			In the c2w application clients may enter or leave different rooms frequently. Consequently, the User List held by each user has to be updated regularly.
+	</t>
+	<t>
+			Every time a client 'A' logs in, logs out or changes his room, the new user list is sent to all the 'interested' clients. Clients are considered to be 'interested' if they are in: the Main Room, the Movie Room that 'A' got into or the Movie Room that 'A' has just left. Moreover, if a client gets in a Movie Room, he should receive the list of users in that room. In this case, the S 'i' field in the User List packet (see Section 4. Packet Format, - Data Field) is insignificant.
+	</t>
+    <t>
+    If the client receives differents user lists at the same time (for example, a user list update because a new user arrives in the main room and the second list because he rejoins a movie room), he MAY differentiate the list thanks to the Room Type(2 bits in our packet format).
+    </t>
+	</section>
+	<section title="Movie Rooms">
+	<t>
+			A movie is associated with each Movie Room. With each movie, a different multicast IP Address is associated. To receive the video flow of a certain movie, clients need to know the IP Address associated with that movie.
+	</t>
+	<t>
+			To be able to watch a movie, the client SHOULD send a Room Request to the server where the Room Type is a Movie Room and the Destination Id is the Id of the corresponding movie. When the server approves the request, it sends a acknowledgement containing the IP Address and the port number of that movie (in the data field we will take 5 bytes for the IP address and the port number, the fist byte is the port number and the other bytes are the IP address) , then it sends the User List of that movie room to the same client and updates the user lists of the other 'interested' (see previous section) clients (See Section 4, Packet Format - Data Field - Room Request Ack).
+	</t>
+	</section>
+	<section title="Private Chat">
+<t>
+			In order for 'A' to open a Private Chat with client 'B', 'B' MUST agree. Hence, to start a private chat, 'A' sends a Room Request to the server where the Room Type is a Private Chat and the Destination Id is that of 'B'. The server will then send a Private Chat Request to 'B' where the Destination Id is that of 'A' (Yes, when 'B' and the server communicate the Destination Id is that of 'A' even if 'A' is the one sending the request), and 'B' should send a Private Chat Ack back to the server. The server will not send an acknowledgement to 'A' until it receives the acknowledgement from 'B'. Once that acknowledgement is received from 'B' the server acknowledges 'A'. If 'B' does not respond to the server, the server MUST send a acknowledgement of type message error to 'A'.
+	</t>
+<t>
+			Note that the delay between the request sent by 'A' and the received acknowledgement might be longer because the server should contact 'B' first. It is RECOMMENDED to take this delay into acount for the timeout delay of the private chat request in the implementation.
+	</t>
+	</section>
+	<section title="The AYT request">
+	<t>
+	This request enables the server to verify that a client is still connected.
+	</t>
+	<t>
+	Note that using the AYT request is OPTIONAL.
+	</t>
+	</section>
+	<section title="Fragmentation">
+
+		<t>
+			When a message exceeds 64kbits in length, it MUST be fragmented into 64kbit long packets. Each single fragment MUST have the first 32 bits as specified in Section 4. Only the first fragment contains the data length.
+			</t>
+		<t>
+				The FRG field MUST contain the value 1 for all the fragments except for the last one. The FRG field of the last fragment MUST be set to 0.
+		</t>
+		<t>
+			The Sequence Number is increased by one for each single fragment. The sender MUST not send a fragment until the acknowledgement of the previous fragment is received. (See Scenario 6:Fragmentation)
+		</t>
+		<t>
+			Note that whenever a message is not fragmented the FRG field MUST be set equal to 0.
+		</t>
+	</section>
+
+    <section title="Example scenario">
+	<t>All the values of the fields were represented in Hexadecimal notation. </t>
+     <section title="Scenario 1: Client Login">
+    <t>
+    This first scenario describes the case where a new client 'Alice' ( 0x61 6c 69 63 65) wants to login. Alice sends a Login Request to the server. Once the server receives that request, it proceeds by sending the Login acknowledgement and User Identifier (for example: 0x0C) to Alice, then the Movie List and the User List. It (the server) will then send the new User List to all of the clients that are in the main room (for example 'Bob' with a User Identifier equal to 0x08). 
+    </t>
+<t>
+    In this example we assume that there is only one movie in the movie list: 'despicable octopus' (0x64 65 73 70 69 63 61 62 6c 65 20 6f 63 74 6f 70 75 73) and that the only users are Bob (0x42 6f 62) and Alice.
+    </t>
+
+   <t>
+    <figure>
+    <artwork>
+
+ 
+Alice                         Server                             Bob
+|                               |                                 |
+|           Login Request       |                                 |
+|------------------------------&gt;|                                 |
+|               msg 1           |                                 |
+|                               |                                 |
+|                               |                                 |
+|        Login ACK              |                                 |
+|&lt;------------------------------|                                 |
+|             msg 2             |                                 |
+|                               |                                 |
+|              Movie List       |                                 |
+|&lt;------------------------------|                                 |
+|               msg 3           |                                 |
+|                               |                                 |
+|                               |                                 |
+|            Movie List ACK     |                                 |
+|------------------------------&gt;|                                 |
+|               msg 4           |                                 |
+|                               |                                 |
+|                               |                                 |
+|            User List          |                                 |
+|&lt;------------_-----------------|                                 |
+|              msg 5            |                                 |
+|                               |                                 |
+|                               |                                 |
+|         User List ACK         |                                 |
+|------------------------------&gt;|                                 |
+|               msg 6           |                                 |
+|                               |            User List            |
+|                               |--------------------------------&gt;|
+|                               |               msg 7             |
+|                               |                                 |
+|                               |                                 |
+|                               |           User List ACK         |
+|                               |&lt;--------------------------------|
+|                               |                msg 8            |
+
+
+</artwork></figure></t>
+<t>- msg 1 - Login Request:</t>
+				<t> FRG            : 00</t>
+				<t> ACK            : 00</t>
+				<t> Type           : 00</t>
+				<t> RT             : 00</t>
+				<t> Sequence Number: 00</t>
+				<t> User Id        : 00</t>
+				<t> Destination Id : 00</t>
+				<t> Data Field:</t>
+					<t>-> Data Length: 05</t>
+					<t>-> Username   : 61 6C 69 63 65 (alice)</t>
+    <t>&nbsp;</t>
+		<t>- msg 2 - Login Ack:</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 01</t>
+				<t>Type           : 00</t>
+				<t>RT             : 00</t>
+				<t>Sequence Number: 00</t>
+				<t>User Id        : 0C</t>
+				<t>Destination Id : 00</t>
+<t>&nbsp;</t>
+		<t>- msg 3 - Movie List</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 00</t>
+				<t>Type           : 03</t>
+				<t>RT             : 00</t>
+				<t>Sequence Number: 00</t>
+				<t>User Id        : 0C</t>
+				<t>Destination Id : 00</t>
+				<t>Data Field:</t>
+					<t>-> Data Length: 14</t>
+					<t>-> Name Length: 12</t>
+					<t>-> Room Id    : 08</t>
+					<t>-> Movie Name : 64 65 73 70 69 63 61 62 6c 65 20 6f 63 74 6f 70 75 73 (Despicable Octopus)</t>
+<t>&nbsp;</t>
+		<t>- msg 4 - Movie List Ack:</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 00</t>
+				<t>Type           : 03</t>
+				<t>RT             : 00</t>
+				<t>Sequence Number: 00</t>
+				<t>User Id        : 0C</t>
+				<t>Destination Id : 00</t>
+<t>&nbsp;</t>
+		<t>- msg 5 - User List:</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 00</t>
+				<t>Type           : 05</t>
+				<t>RT             : 00</t>
+				<t>Sequence Number: 01</t>
+				<t>User Id        : 0C</t>
+				<t>Destination Id : 00</t>
+				<t>Data Field:</t>
+					<t>-> Data Length : 0C</t>
+					<t>-> Name Length1: 03</t>
+					<t>-> Username 1  : 42 6F 62 (bob)</t>
+					<t>-> User Id 1   : 08</t>
+					<t>-> Name Length2: 05</t>
+					<t>-> Username 2  : 61 6C 69 63 65 (alice)</t>
+					<t>-> User Id 2   : 0C</t>
+<t>&nbsp;</t>
+		<t>- msg 6 - User List Ack:</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 01</t>
+				<t>Type           : 05</t>
+				<t>RT             : 00</t>
+				<t>Sequence Number: 01</t>
+				<t>User Id        : 0C</t>
+				<t>Destination Id : 00</t>
+<t>&nbsp;</t>
+		<t>- msg 7 - User List:</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 00</t>
+				<t>Type           : 05</t>
+				<t>RT             : 00</t>
+				<t>Sequence Number: B4</t>
+				<t>User Id        : 08</t>
+				<t>Destination Id : 00</t>
+				<t>Data Field:</t>
+					<t>-> Data Length : 0C</t>
+					<t>-> Name Length1: 03</t>
+					<t>-> Username 1  : 42 6F 62 (bob)</t>
+					<t>-> User Id 1   : 08</t>
+					<t>-> Name Length2: 05</t>
+					<t>-> Username 2  : 61 6C 69 63 65 (alice)</t>
+					<t>-> User Id 2   : 0C</t>
+<t>&nbsp;</t>
+		<t>- msg 8 - User List Ack:</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 00</t>
+				<t>Type           : 05</t>
+				<t>RT             : 00</t>
+				<t>Sequence Number: B4</t>
+				<t>User Id        : 08</t>
+				<t>Destination Id : 00</t>
+
+
+
+
+
+
+    </section><!--End of Scenario 1-->
+<section title="Scenario 2: Client gets into a Movie Room">
+    <t>
+    Client chooses the movie to watch. The server will send the Room Request Acknowledgement (with the Port Number and the IP Address of the movie) and the User List in the related movie room. We consider that Bob is already in that movie room. Consequently, the server will send the User List to Bob for him to update his User List. 
+    </t>
+	<t>
+    We will assume that the requested movie room's Id is equal to 0X08.
+    </t>
+
+    <t>
+    <figure>
+    <artwork>
+
+Alice                       Server                               Bob
+|                              |                                  |
+|        Room Request          |                                  |
+|-----------------------------&gt;|                                  |
+|             msg 1            |                                  |
+|                              |                                  |
+|                              |                                  |
+|                              |                                  |
+|       Room Request ACK       |                                  |
+|&lt;-----------------------------|                                  |
+|             msg 2            |                                  |
+|                              |                                  |
+|                              |                                  |
+|    User List (movie room)    |                                  |
+|&lt;-----------------------------|                                  |
+|            msg 3             |                                  |
+|                              |                                  |
+|                              |                                  |
+|        User List ACK         |                                  |
+|-----------------------------&gt;|                                  |
+|             msg 4            |                                  |
+|                              |                                  |
+|                              |                                  |
+|                              |                                  |
+|                              |            User List             |
+|                              |---------------------------------&gt;|
+|                              |              msg 5               |
+|                              |                                  |
+|                              |                                  |
+|                              |            User List ACK         |
+|                              |&lt;---------------------------------|
+|                              |               msg 6              |
+|                              |                                  |
+|                              |                                  |
+
+    </artwork></figure></t>
+    <t>- msg 1 - Room Request:</t>
+                <t>FRG            : 00</t>
+				<t>ACK            : 00</t>
+				<t>Type           : 08</t>
+				<t>RT             : 01</t>
+				<t>Sequence Number: 08</t>
+				<t>User Id        : 0C</t>
+				<t>Destination Id : 08</t>
+<t>&nbsp;</t>
+		<t>- msg 2 - Room Request Ack:</t>
+                                <t>FRG            : 00</t>
+				<t>ACK            : 01</t>
+				<t>Type           : 08</t>
+				<t>RT             : 01</t>
+				<t>Sequence Number: 08</t>
+				<t>User Id        : 0C</t>
+				<t>Destination Id : 08</t>
+				<t>Data Field :</t>
+        				<t>-> Port Number: 0A</t>
+        				<t>-> IP Address : 2C 65 2F 00</t>
+<t>&nbsp;</t>
+		<t>- msg 3 - User List (movie room):</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 00</t>
+				<t>Type           : 05</t>
+				<t>RT             : 01</t>
+				<t>Sequence Number: BB</t>
+				<t>User Id        : 0C</t>
+				<t>Destination Id : 00</t>
+				<t>Data Field:</t>
+					<t>-> Data Length : 0C</t>
+					<t>-> Name Length1: 03</t>
+					<t>-> Username 1  : 42 6F 62 (bob)</t>
+					<t>-> User Id 1   : 08</t>
+					<t>-> Name Length2: 05</t>
+					<t>-> Username 2  : 61 6C 69 63 65 (alice)</t>
+					<t>-> User Id 2   : 0C</t>
+<t>&nbsp;</t>
+		<t>- msg 4 - User List Ack:</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 00</t>
+				<t>Type           : 05</t>
+				<t>RT             : 01</t>
+				<t>Sequence Number: BB</t>
+				<t>User Id        : 0C</t>
+				<t>Destination Id : 00</t>
+<t>&nbsp;</t>
+		<t>- msg 5 - User List:</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 00</t>
+				<t>Type           : 05</t>
+				<t>RT             : 01</t>
+				<t>Sequence Number: F1</t>
+				<t>User Id        : 08</t>
+				<t>Destination Id : 00</t>
+				<t>Data Field:</t>
+					<t>-> Data Length : 0C</t>
+					<t>-> Name Length1: 03</t>
+					<t>-> Username 1  : 42 6F 62 (bob)</t>
+					<t>-> User Id 1   : 08</t>
+					<t>-> Name Length2: 05</t>
+					<t>-> Username 2  : 61 6C 69 63 65 (alice)</t>
+					<t>-> User Id 2   : 0C</t>
+<t>&nbsp;</t>
+		<t>- msg 6 - User List Ack:</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 00</t>
+				<t>Type           : 05</t>
+				<t>RT             : 01</t>
+				<t>Sequence Number: F1</t>
+				<t>User Id        : 08</t>
+				<t>Destination Id : 00</t>
+
+
+
+    </section><!--End of Scenario 2-->
+
+
+
+<section title="Scenario 3: User begins a private chat">
+   <t>
+Alice and Bob are in the main room. Alice wants to begin a private chat with Bob. The User Id of Alice is 12(0x0c),and the User Id of Bob is 8 (0x08).
+    </t>
+
+    <t>
+    <figure>
+    <artwork>
+
+Alice                         server                              Bob
+|  Room Request (private chat) |                                   |
+|-----------------------------&gt;|                                   |             
+|        msg 1                 |                                   |
+|                              |         Private Chat Request      |
+|                              |----------------------------------&gt;|
+|                              |               msg 2               |
+|                              |                                   |                                                        
+|                              |                                   |                                              
+|                              |         Private Chat ACK          |  
+|                              |&lt;----------------------------------|
+|                              |               msg 3               |                                                         
+|                              |                                   |                                                         
+|          Room ACK            |                                   |                                             
+|&lt;-----------------------------|                                   |            
+|           msg 4              |                                   |                           
+|                              |                                   |                                                            
+|                              |                                   |                                                            
+|                              |                                   |                                                            
+|           Message            |                                   |                   
+|-----------------------------&gt;|                                   |                 
+|            msg 5             |                                   |                                    
+|                              |                                   |                                                            
+|                              |                                   |                                                            
+|           Message ACK        |                                   |
+|&lt;-----------------------------|                                   |
+|             msg 6            |                                   |                                                            
+|                              |                                   |
+
+    </artwork></figure></t>
+		<t>- msg 1 - Room Request (Private Chat):</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 00</t>
+				<t>Type           : 08</t>
+				<t>RT             : 02</t>
+				<t>Sequence Number: 2F</t>
+				<t>User Id        : 0C</t>
+				<t>Destination Id : 08</t>
+<t>&nbsp;</t>
+		<t>- msg 2 - Private Chat Request:</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 00</t>
+				<t>Type           : 0A</t>
+				<t>RT             : 02</t>
+				<t>Sequence Number: AB</t>
+				<t>User Id        : 08</t>
+				<t>Destination Id : 0C</t>
+<t>&nbsp;</t>
+		<t>- msg 3 - Private Chat Ack:</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 01</t>
+				<t>Type           : 0A</t>
+				<t>RT             : 02</t>
+				<t>Sequence Number: AB</t>
+				<t>User Id        : 08</t>
+				<t>Destination Id : 0C</t>
+<t>&nbsp;</t>
+		<t>- msg 4 - Room Ack:</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 01</t>
+				<t>Type           : 08</t>
+				<t>RT             : 02</t>
+				<t>Sequence Number: 2F</t>
+				<t>User Id        : 0C</t>
+				<t>Destination Id : 08</t>
+<t>&nbsp;</t>
+		<t>- msg 5 - Message:</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 00</t>
+				<t>Type           : 01</t>
+				<t>RT             : 02</t>
+				<t>Sequence Number: 30</t>
+				<t>User Id        : 0C</t>
+				<t>Destination Id : 08</t>
+				<t>Data Field     :</t>
+					<t>-> Data Length: 05</t>
+					<t>-> Message    : 65 6c 6c 6f (hello)</t>
+<t>&nbsp;</t>
+		<t>- msg 6 - Message Ack:</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 01</t>
+				<t>Type           : 01</t>
+				<t>RT             : 02</t>
+				<t>Sequence Number: 30</t>
+				<t>User Id        : 0C</t>
+				<t>Destination Id : 08</t>
+<t>&nbsp;</t>
+		<t>- msg 7 - Message Forward:</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 00</t>
+				<t>Type           : 01</t>
+				<t>RT             : 02</t>
+				<t>Sequence Number: AC</t>
+				<t>User Id        : 08</t>
+				<t>Destination Id : 0C</t>
+				<t>Data Field     :</t>
+					<t>-> Data Length: 05</t>
+					<t>-> Message    : 65 6c 6c 6f (hello)</t>
+<t>&nbsp;</t>
+		<t>- msg 8 - Message Received Ack:</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 01</t>
+				<t>Type           : 0C</t>
+				<t>RT             : 02</t>
+				<t>Sequence Number: AC</t>
+				<t>User Id        : 08</t>
+				<t>Destination Id : 0C</t>
+    
+       </section><!--End of Scenario 3-->
+<section title="Scenario 4: Packet loss and errors">
+    <t>
+    Another user named Alice wants to login. Alice enters 'alice' as a username. The first Login Request sent by Alice will be lost. Consequently, after the timeout the client will send the same Login Request again (with the same Sequence Number). Since there is another client with the same username ('alice') When the server receives the Login Request it will send an Error of Error Type 0x01 to the client. Then the client will change the username to 'alicewonderland' and send a new Login Request that will be acknowledged by the server. 
+    </t>
+
+    <t>
+    <figure>
+    <artwork>
+Alice                          server    
+|          Login Request        |                                          
+|---------------------X         |                          
+|             msg 1             |                                                                         
+|                               |                                                                          
+|                               |                                                                          
+|                               |                                                                          
+|                               |                 
+|          Login Request        |                                
+|------------------------------&gt;|                        
+|             msg 2             |                                                                                      
+|                               |                                    
+|             Error             |                                    
+|&lt;------------------------------|                                    
+|             msg 3             |                                     
+|                               |                                    
+|          Login Request        |                                                     
+|------------------------------&gt;|                                                 
+|             msg 4             |                                                                                      
+|                               |
+|          Login ACK            |
+|&lt;------------------------------|
+|             msg 5             |
+
+   </artwork></figure></t>
+		<t>- msg 1 - Login Request:</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 00</t>
+				<t>Type           : 00</t>
+				<t>RT             : 00</t>
+				<t>Sequence Number: 00</t>
+				<t>User Id        : 00</t>
+				<t>Destination Id : 00</t>
+				<t>Data Field:</t>
+					<t>-> Data Length: 05</t>
+					<t>-> Username   : 61 6C 69 63 65 (alice)</t>
+<t>&nbsp;</t>
+		<t>- msg 2 - Login Request:</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 00</t>
+				<t>Type           : 00</t>
+				<t>RT             : 00</t>
+				<t>Sequence Number: 00</t>
+				<t>User Id        : 00</t>
+				<t>Destination Id : 00</t>
+				<t>Data Field:</t>
+					<t>-> Data Length: 05</t>
+					<t>-> Username   : 61 6C 69 63 65 (alice)</t>
+<t>&nbsp;</t>
+		<t>- msg 3 - Error:</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 01</t>
+				<t>Type           : 0e</t>
+				<t>RT             : 00</t>
+				<t>Sequence Number: 00</t>
+				<t>User Id        : 00</t>
+				<t>Destination Id : 00</t>
+				<t>Data Field:</t>
+					<t>-> Data Length: 01</t>
+					<t>-> Error Type : 01</t>
+				<t>&nbsp;</t>
+		<t>- msg 4 - Login Request:</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 00</t>
+				<t>Type           : 00</t>
+				<t>RT             : 00</t>
+				<t>Sequence Number: 00</t>
+				<t>User Id        : 00</t>
+				<t>Destination Id : 00</t>
+				<t>Data Field:</t>
+					<t>-> Data Length: 15</t>
+					<t>-> Username   : 0e 61 6c 69 63 65 57 6f 6e 64 65 72 6c 61 6e 64 (alicewonderland)</t>
+		<t>&nbsp;</t>
+		<t>- msg 5 - Login Ack:</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 01</t>
+				<t>Type           : 00</t>
+				<t>RT             : 00</t>
+				<t>Sequence Number: 00</t>
+				<t>User Id        : 0C</t>
+				<t>Destination Id : 00</t>
+				<t>&nbsp;</t>
+    
+    </section><!--End of Scenario 4 -->
+<section title="Scenario 5: Fragmentation">
+   <t>
+    Alice receives a Movie List from the server. This time, the packet of the movie list is longer than 64kbits. 
+    Consequently, the packet is going to be fragmented. The FRG field of the first fragment will be equal to 1, while that of the second fragment (which is the last one in this case) is going to be equal to 0.
+    </t>
+    <t>Thus, when the client (Alice) receives the First Fragment of the Movie List she acknowledges this fragment and waits for the next fragments to arrive. Once the packet of an FRG field equal to 0 arrives the client knows that it is the last fragment.</t>
+
+
+    <t>
+    <figure>
+    <artwork>
+Alice                          server                                                                 
+|                               |                 
+|   Movie List(First Fragment)  |                                    
+|&lt;------------------------------|                        
+|             msg 1             |                                                                                       
+|                               |
+|Movie List (First Fragment) ACK|                                
+|------------------------------&gt;|
+|             msg 2             |                                                                                      
+|                               |                                    
+|  Movie List (Second Fragment) |                                    
+|&lt;------------------------------|                                    
+|             msg 3             |                                                                                       
+|                               |
+|Movie List(Second Fragment)ACK |                                
+|------------------------------&gt;|
+|             msg 4             |
+    </artwork></figure></t>
+		<t>- msg 1 - Movie List (First Fragment):</t>
+				<t>FRG            : 01</t>
+				<t>ACK            : 00</t>
+				<t>Type           : 03</t>
+				<t>RT             : 00</t>
+				<t>Sequence Number: 00</t>
+				<t>User Id        : 0C</t>
+				<t>Destination Id : 00</t>
+				<t>Data Field:</t>
+					<t>-> Data Length : 200</t>
+					<t>-> Name Length1: 12</t>
+					<t>-> Room Id 1   : 08</t>
+					<t>-> Movie Name 1: 64 65 73 70 69 63 61 62 6c 65 20 6f 63 74 6f 70 75 73 (despicable octopus)</t>
+					<t>...</t>
+					<t>...</t>
+					<t>...</t>
+					<t>-> Name Length80: 1E</t>
+					<t>-> Room Id 80   : 50</t>
+					<t>-> Movie Name 80: 61 6c 6c 20 79 6f 75 72 20 62 61 73 65 20 61 72 65 20 62 65 6c 6f 6e 67 20 74 6f 20 75 73 (all your base are belong to us)</t>
+<t>&nbsp;</t>
+		<t>- msg 2 - Movie List (First Fragment) Ack:</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 01</t>
+				<t>Type           : 03</t>
+				<t>RT             : 00</t>
+				<t>Sequence Number: 00</t>
+				<t>User Id        : 0C</t>
+				<t>Destination Id : 00</t>
+			<t>&nbsp;</t>
+		<t>- msg 3: Movie List (Second Fragment)</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 00</t>
+				<t>Type           : 03</t>
+				<t>RT             : 00</t>
+				<t>Sequence Number: 01</t>
+				<t>User Id        : 0C</t>
+				<t>Destination Id : 00</t>
+				<t>Data Field:</t>
+					<t>-> Name Length: 24</t>
+					<t>-> Room Id    : 51</t>
+					<t>-> Movie Name : 66 72 65 65 7a 69 6e 67 20 77 6f 6f 6b 69 65 20 61 6e 64 20 74 68 65 20 73 65 63 72 65 74 20 6e 69 6e 6a 61 (freezing wookie and the secret ninja)</t>
+				<t>&nbsp;</t>
+		<t>- msg 4: Movie List (Second Fragment) Ack</t>
+				<t>FRG            : 00</t>
+				<t>ACK            : 01</t>
+				<t>Type           : 03</t>
+				<t>RT             : 00</t>
+				<t>Sequence Number: 01</t>
+				<t>User Id        : 0C</t>
+				<t>Destination Id : 00</t>
+    
+    </section><!--End of Scenario 5 -->
+    </section><!--End of examples-->
+
+    <section title="Conclusion">
+        <t>
+            In our proposition, we gave all the packets a common format whith different options available within different packet types. Each packet is sequenced and acknowledged to insure the reliability of the protocol. The example scenarios in the end illustrate how the protocol satisfies the different functions of the c2w application.</t>
+	    <t>However, the format of the packets was defined in such a way that some bits may remain insignificant depending on the type of the packet. There are more issues to be explored. For instance, some specifications such as the Update of user lists at each change can cause overflows, packet loss and errors. So far, we have avoided security issues but these can be improved.</t>
+    </section>
+<section title="Normative references">
+    <t>[1]  Bradner, S., "Key Words for Use in RFCs to Indicate Requirement
+        Levels", BCP 14, RFC 2119, March 1997.</t>
+    <t>[2]  Postel, J., "User Datagram Protocol", STD 6, RFC 768,
+                August 1980.</t>
+    <t>[3]  Postel, J., "Transmission Control Protocol", STD 7, RFC
+                793, September 1981.</t>
+    <t>[4]  Postel, J., "Internet Protocol", STD 5, RFC 791, September 1981.</t>
+ </section>
+    <!-- This PI places the pagebreak correctly (before the section title) in the text output. -->
+
+    <?rfc needLines="8" ?>
+
+
+
+
+
+  </middle>
+</rfc>
